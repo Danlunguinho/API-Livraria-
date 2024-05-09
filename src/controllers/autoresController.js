@@ -3,21 +3,28 @@ import { autores } from "../models/index.js"
 
 class AutorController {
 
+  //Metodo para listar autores
   static listarAutores = async (req, res, next) => {
     try {
-      const autoresResultado = await autores.find()
+      const autoresResultado = autores.find()
 
-      res.status(200).json(autoresResultado)
+      //Armazenando a query na variavel de paginação
+      req.resultado = autoresResultado
+
+      //next é responsavel para chamar o middleware
+      next()
     } catch (erro) {
       next(erro)
     }
   }
 
+  //Metodo para listar autores pelo seu id
   static listarAutorPorId = async (req, res, next) => {
     try {
       const id = req.params.id
 
       const autorResultado = await autores.findById(id)
+        //validação para saber se algo está sendo retornado
         if (autorResultado !== null){
           res.status(200).send(autorResultado)
         } else {
@@ -29,7 +36,7 @@ class AutorController {
     }
   }
   
-  
+  //Metodo post para cadastrar novos autores no banco de dados
   static cadastrarAutor = async (req, res, next) => {
     try {
       let autor = new autores(req.body)
@@ -42,7 +49,7 @@ class AutorController {
     }
   }
   
-
+  //Metodo para atualizar um autor pelo seu id
   static atualizarAutor = async (req, res, next) => {
     try {
       const id = req.params.id
@@ -59,6 +66,7 @@ class AutorController {
     }
   }
   
+  //Metodo para realizar a exclusão de um autor do banco de dados
   static excluirAutor = async (req, res, next) => {
     try {
       const id = req.params.id

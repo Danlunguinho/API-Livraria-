@@ -1,27 +1,34 @@
+import NaoEncontrado from "../erros/NaoEcontrado.js"
 import { livros, autores } from "../models/index.js"
 
 class LivroController {
 
+  //Metodo para listar os livros
   static listarLivros = async (req, res, next) => {
     try {
-      const livrosResultado = await livros.find()
-        .populate("autor")
-        .exec()
+      const buscarLivros = livros.find()
+      
+      //Armazenando a query na variavel de paginação
+      req.resultado = buscarLivros
 
-      res.status(200).json(livrosResultado)
+      //next é responsavel para chamar o middleware
+      next()
     } catch (erro) {
       next(erro)
     }
   }
 
+  //Metodo para listar autores pelo seu id
   static listarLivroPorId = async (req, res, next) => {
     try {
       const id = req.params.id
 
+      //Populate faz com que os dados do autor sejam mostrados no livro 
       const livroResultado = await livros.findById(id)
         .populate("autor", "nome")
         .exec()
 
+         //validação para saber se algo está sendo retornado
         if (livroResultado !== null) {
           res.status(200).send(livroResultado)
         } else {
@@ -32,6 +39,7 @@ class LivroController {
     }
   }
 
+  //Metodo post para cadastrar novos livros no banco de dados
   static cadastrarLivro = async (req, res, next) => {
     try {
       let livro = new livros(req.body)
@@ -44,11 +52,13 @@ class LivroController {
     }
   }
 
+  //Metodo para atualizar um livro pelo seu id
   static atualizarLivro = async (req, res, next) => {
     try {
       const id = req.params.id
 
       const livroResultado = await livros.findByIdAndUpdate(id, {$set: req.body})
+      //validação para saber se algo está sendo retornado
       if (livroResultado !== null) {
         res.status(200).send({message: "Livro atualizado"})
       } else {
@@ -60,11 +70,13 @@ class LivroController {
     }
   }
 
+  //Metodo para realizar a exclusão de um autor do banco de dados
   static excluirLivro = async (req, res, next) => {
     try {
       const id = req.params.id
 
       const livroResultado = await livros.findByIdAndDelete(id)
+      //validação para saber se algo está sendo retornado
       if (livroResultado !== null) {
         res.status(200).send({message: "Livro excluido"})
       } else {
@@ -76,15 +88,19 @@ class LivroController {
     }
   };
 
+  //Metodo responsavel pela busca de livros
   static buscarLivro = async (req, res, next) => {
     try {
       const busca = await processaBusca(req.query)
+      //validação para saber se algo está sendo retornado
         if(busca !== null){
-          const livrosResultado = await livros
+          const livrosResultado = livros
             .find(busca)
             .populate("autor")
 
-          res.status(200).send(livrosResultado)
+          req.resultado = livrosResultado
+
+          next()
         } else {
         res.status(200).send([])
         } 
@@ -119,8 +135,6 @@ async function processaBusca(parametros) {
           } else {
             busca = null
           }
-
-        
       }
 
   return busca    
